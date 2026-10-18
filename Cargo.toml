@@ -13,6 +13,10 @@ members = [
     "contracts/invoice-maturity",
     "contracts/invoice-snapshot",
     "contracts/multisig-admin",
+    "contracts/twap-oracle",
+    "contracts/early-repayment",
+    "contracts/staking-rewards",
+    "contracts/dividend-reinvestment",
 ]
 
 [workspace.dependencies]
