@@ -12,6 +12,10 @@ members = [
     "contracts/invoice-registry",
     "contracts/portfolio-snapshot",
     "contracts/secondary-fee",
+    "contracts/invoice-amendment",
+    "contracts/invoice-settlement",
+    "contracts/collateral",
+    "contracts/secondary-market",
 ]
 
 [workspace.dependencies]
