@@ -27,15 +27,9 @@ members = [
     "contracts/order-book",
     "contracts/partial-settlement",
     "contracts/payment-distributor",
-    "contracts/platform-pause",
-    "contracts/pool-rebalance",
-    "contracts/price-cap",
-    "contracts/referral-tier-upgrade",
-    "contracts/secondary-market",
-    "contracts/watchlist",
-    "contracts/yield-accrual",
-    "contracts/yield-booster",
-    "contracts/yield-vesting",
+    "contracts/fee-treasury",
+    "contracts/secondary-market-oracle",
+    "contracts/transfer-restriction",
 ]
 
 [workspace.dependencies]

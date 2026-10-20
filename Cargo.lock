@@ -979,17 +979,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223"
 
 [[package]]
-name = "fee-discount"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk 27.0.6",
-]
-
-[[package]]
 name = "fee-treasury"
 version = "0.1.0"
 dependencies = [
- "soroban-sdk 27.0.6",
+ "soroban-sdk",
 ]
 
 [[package]]
@@ -1949,10 +1942,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "secondary-market"
+name = "secondary-market-oracle"
 version = "0.1.0"
 dependencies = [
- "soroban-sdk 27.0.6",
+ "soroban-sdk",
 ]
 
 [[package]]
@@ -2719,6 +2712,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baa693a8032d7e1cada7d0041e96126df243179ff061456783ac7f12bda4744c"
 dependencies = [
  "winnow",
+]
+
+[[package]]
+name = "transfer-restriction"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk",
 ]
 
 [[package]]
