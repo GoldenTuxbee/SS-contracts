@@ -24,6 +24,7 @@
 
 mod errors;
 mod events;
+mod market_maker;
 mod types;
 
 #[cfg(test)]

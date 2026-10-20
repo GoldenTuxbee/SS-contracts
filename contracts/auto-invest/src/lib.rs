@@ -2,6 +2,7 @@
 
 mod errors;
 mod events;
+mod subscription;
 mod types;
 
 #[cfg(test)]

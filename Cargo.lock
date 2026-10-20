@@ -979,10 +979,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da7c62ceae207dd37ea5b845da6a0696c799f85e97da1ab5b7910be3c1c80223"
 
 [[package]]
+name = "fee-discount"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 27.0.6",
+]
+
+[[package]]
 name = "fee-treasury"
 version = "0.1.0"
 dependencies = [
- "soroban-sdk",
+ "soroban-sdk 27.0.6",
 ]
 
 [[package]]
@@ -1614,20 +1621,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "platform-pause"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk 27.0.6",
-]
-
-[[package]]
-name = "pool-rebalance"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk 27.0.6",
-]
-
-[[package]]
 name = "portable-atomic"
 version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1665,13 +1658,6 @@ checksum = "479ca8adacdd7ce8f1fb39ce9ecccbfe93a3f1344b3d0d97f20bc0196208f62b"
 dependencies = [
  "proc-macro2",
  "syn 2.0.119",
-]
-
-[[package]]
-name = "price-cap"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk 27.0.6",
 ]
 
 [[package]]
@@ -1825,13 +1811,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "referral-tier-upgrade"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk 27.0.6",
-]
-
-[[package]]
 name = "regex-syntax"
 version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1942,10 +1921,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "secondary-market"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 27.0.6",
+]
+
+[[package]]
 name = "secondary-market-oracle"
 version = "0.1.0"
 dependencies = [
- "soroban-sdk",
+ "soroban-sdk 27.0.6",
 ]
 
 [[package]]
@@ -2718,7 +2704,7 @@ dependencies = [
 name = "transfer-restriction"
 version = "0.1.0"
 dependencies = [
- "soroban-sdk",
+ "soroban-sdk 27.0.6",
 ]
 
 [[package]]
@@ -2854,13 +2840,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "watchlist"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk 27.0.6",
-]
-
-[[package]]
 name = "windows-core"
 version = "0.62.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2935,27 +2914,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23b97319f7b8343df12cc98938e5c3eb436064524c8d2b4e30a1d3a36eecdf81"
 dependencies = [
  "memchr",
-]
-
-[[package]]
-name = "yield-accrual"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk 27.0.6",
-]
-
-[[package]]
-name = "yield-booster"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk 27.0.6",
-]
-
-[[package]]
-name = "yield-vesting"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk 27.0.6",
 ]
 
 [[package]]
