@@ -40,6 +40,8 @@ proptest = "1"
 
 [profile.release]
 opt-level = "z"
+strip = "symbols"
+overflow-checks = true
 lto = true
 codegen-units = 1
 panic = "abort"

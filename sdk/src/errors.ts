@@ -61,7 +61,24 @@ export const CONTRACT_ERRORS = {
     "InvalidMaxInvestors": 56,
     "TokenNotAccepted": 58,
     "SameAdminApproval": 59,
-    "SettlementNotProposed": 60
+    "SettlementNotProposed": 60,
+    "InvalidFundingThreshold": 61,
+    "FundingThresholdNotReached": 62,
+    "MaxFundingThresholdExceeded": 63,
+    "BuyLimitExceeded": 64,
+    "UnsupportedCurrency": 65,
+    "StalePrice": 66,
+    "FxOracleNotSet": 67,
+    "InvestorCapReached": 68,
+    "CustodyExists": 69,
+    "CustodyNotFound": 70,
+    "PositionInCustody": 71,
+    "CollateralTopUpRequired": 72,
+    "CollateralNotConfigured": 73,
+    "CollateralRatioHealthy": 74,
+    "InvalidCollateralConfig": 75,
+    "CollateralReserved": 76,
+    "RepaymentReserved": 77
   },
   "invoice-token": {
     "AlreadyInit": 1,
@@ -115,6 +132,25 @@ export const CONTRACT_ERRORS = {
     "TooManyRefundRecipients": 26,
     "InvalidRefundWeight": 27,
     "NothingToRefund": 28
+  },
+  "secondary-market": {
+    "AlreadyInitialized": 1,
+    "NotInitialized": 2,
+    "InvalidAmount": 3,
+    "InvalidPrice": 4,
+    "InsufficientBalance": 5,
+    "ListingNotFound": 6,
+    "ListingNotActive": 7,
+    "ListingExpired": 8,
+    "Unauthorized": 9,
+    "ExceedsListedQuantity": 10,
+    "InvalidExpiry": 11,
+    "FloorPriceViolation": 12,
+    "InvalidFloorMultiplier": 13,
+    "InvalidFloorInputs": 14,
+    "FloorNotConfigured": 15,
+    "FloorAssetMismatch": 16,
+    "Overflow": 17
   }
 } as const;
 

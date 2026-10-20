@@ -29,4 +29,7 @@ pub enum StorageKey {
     NextListingId,
     Listing(u32),
     InvoiceListings(BytesN<32>),
+    FloorMultiplier,
+    FloorInputs(BytesN<32>),
+    FloorInvoice(Address),
 }
