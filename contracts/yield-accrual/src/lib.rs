@@ -1,5 +1,7 @@
 #![no_std]
 
+mod dynamic_yield;
+
 use soroban_sdk::{
     contract, contracterror, contractimpl, contracttype, symbol_short, Address, BytesN, Env,
 };

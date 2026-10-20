@@ -28,6 +28,7 @@ members = [
     "contracts/partial-settlement",
     "contracts/payment-distributor",
     "contracts/fee-treasury",
+    "contracts/secondary-market",
     "contracts/secondary-market-oracle",
     "contracts/transfer-restriction",
 ]

@@ -9,6 +9,7 @@
 mod constants;
 mod errors;
 mod events;
+mod fraction_balance;
 mod storage;
 mod types;
 
