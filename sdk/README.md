@@ -19,7 +19,9 @@ The generated `ContractError` type keeps the contract, name, and numeric code to
 
 The schema is available at `@stellarstate/ss-contracts-sdk/schemas/contract-errors.json`. Its `error.data` payload uses `{ "contract": "...", "name": "...", "code": 123 }`.
 
-The exports are generated from the `#[contracterror]` enums in the three contract crates. After changing an error enum, run `npm run generate` from this directory and include both generated files in the change.
+The exports are generated from the `#[contracterror]` enums in `invoice-escrow`, `invoice-token`, `payment-distributor`, and `secondary-market`. After changing an error enum, run `npm run generate` from this directory and include both generated files in the change.
+
+Institutional controls expose `CONTRACT_ERRORS["invoice-escrow"].InvestorCapReached` and `CONTRACT_ERRORS["secondary-market"].FloorPriceViolation`. Soroban errors are numeric; use the contracts' `get_investor_count` and `get_floor_price` queries for the corresponding counts and price breakdown.
 
 ## Development
 

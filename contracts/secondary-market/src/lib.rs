@@ -25,12 +25,14 @@
 mod errors;
 mod events;
 mod market_maker;
+mod reserve_floor;
 mod types;
 
 #[cfg(test)]
 mod test;
 
 pub use errors::Error;
+pub use reserve_floor::FloorPrice;
 use soroban_sdk::{contract, contractimpl, token, Address, BytesN, Env, Vec};
 pub use types::{Listing, StorageKey};
 
@@ -79,6 +81,13 @@ impl SecondaryMarket {
         if expiry <= now {
             return Err(Error::InvalidExpiry);
         }
+        reserve_floor::validate(
+            &env,
+            &invoice_id,
+            &fraction_token,
+            &payment_token,
+            ask_price_per_fraction,
+        )?;
 
         // Escrow the fractions into this contract. invoice-token::transfer
         // itself enforces frozen/paused/transfer-locked state and rejects an
@@ -167,6 +176,13 @@ impl SecondaryMarket {
         if quantity > listing.quantity {
             return Err(Error::ExceedsListedQuantity);
         }
+        reserve_floor::validate(
+            &env,
+            &listing.invoice_id,
+            &listing.fraction_token,
+            &listing.payment_token,
+            listing.ask_price_per_fraction,
+        )?;
 
         let total_price = listing
             .ask_price_per_fraction

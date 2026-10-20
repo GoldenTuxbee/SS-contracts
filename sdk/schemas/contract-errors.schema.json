@@ -1255,6 +1255,346 @@
           "type": "object",
           "properties": {
             "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "InvalidFundingThreshold"
+            },
+            "code": {
+              "const": 61
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "FundingThresholdNotReached"
+            },
+            "code": {
+              "const": 62
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "MaxFundingThresholdExceeded"
+            },
+            "code": {
+              "const": 63
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "BuyLimitExceeded"
+            },
+            "code": {
+              "const": 64
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "UnsupportedCurrency"
+            },
+            "code": {
+              "const": 65
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "StalePrice"
+            },
+            "code": {
+              "const": 66
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "FxOracleNotSet"
+            },
+            "code": {
+              "const": 67
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "InvestorCapReached"
+            },
+            "code": {
+              "const": 68
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "CustodyExists"
+            },
+            "code": {
+              "const": 69
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "CustodyNotFound"
+            },
+            "code": {
+              "const": 70
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "PositionInCustody"
+            },
+            "code": {
+              "const": 71
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "CollateralTopUpRequired"
+            },
+            "code": {
+              "const": 72
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "CollateralNotConfigured"
+            },
+            "code": {
+              "const": 73
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "CollateralRatioHealthy"
+            },
+            "code": {
+              "const": 74
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "InvalidCollateralConfig"
+            },
+            "code": {
+              "const": 75
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "CollateralReserved"
+            },
+            "code": {
+              "const": 76
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "invoice-escrow"
+            },
+            "name": {
+              "const": "RepaymentReserved"
+            },
+            "code": {
+              "const": 77
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
               "const": "invoice-token"
             },
             "name": {
@@ -2222,6 +2562,346 @@
             },
             "code": {
               "const": 28
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "AlreadyInitialized"
+            },
+            "code": {
+              "const": 1
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "NotInitialized"
+            },
+            "code": {
+              "const": 2
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "InvalidAmount"
+            },
+            "code": {
+              "const": 3
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "InvalidPrice"
+            },
+            "code": {
+              "const": 4
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "InsufficientBalance"
+            },
+            "code": {
+              "const": 5
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "ListingNotFound"
+            },
+            "code": {
+              "const": 6
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "ListingNotActive"
+            },
+            "code": {
+              "const": 7
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "ListingExpired"
+            },
+            "code": {
+              "const": 8
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "Unauthorized"
+            },
+            "code": {
+              "const": 9
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "ExceedsListedQuantity"
+            },
+            "code": {
+              "const": 10
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "InvalidExpiry"
+            },
+            "code": {
+              "const": 11
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "FloorPriceViolation"
+            },
+            "code": {
+              "const": 12
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "InvalidFloorMultiplier"
+            },
+            "code": {
+              "const": 13
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "InvalidFloorInputs"
+            },
+            "code": {
+              "const": 14
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "FloorNotConfigured"
+            },
+            "code": {
+              "const": 15
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "FloorAssetMismatch"
+            },
+            "code": {
+              "const": 16
+            }
+          },
+          "required": [
+            "contract",
+            "name",
+            "code"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "contract": {
+              "const": "secondary-market"
+            },
+            "name": {
+              "const": "Overflow"
+            },
+            "code": {
+              "const": 17
             }
           },
           "required": [

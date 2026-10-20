@@ -55,6 +55,16 @@ pub enum StorageKey {
     Currency(soroban_sdk::Symbol),
     /// Persistent: multi-currency investment records by (invoice_id, investor).
     InvestRecords(soroban_sdk::BytesN<32>, soroban_sdk::Address),
+    InvoiceCap(soroban_sdk::BytesN<32>),
+    Investors(soroban_sdk::BytesN<32>),
+    InvestmentStarted(soroban_sdk::BytesN<32>),
+    Custody(soroban_sdk::BytesN<32>, soroban_sdk::Address),
+    Repayment(soroban_sdk::BytesN<32>),
+    Collateral(soroban_sdk::Address),
+    Outstanding(soroban_sdk::BytesN<32>),
+    EscrowOutstanding(soroban_sdk::Symbol),
+    CollateralReserve(soroban_sdk::Address),
+    RepaymentReserve(soroban_sdk::Address),
 }
 
 /// One multi-currency investment, normalised to the base currency at the FX
@@ -277,6 +287,7 @@ pub struct SettlementProposal {
 pub enum InvoiceStatus {
     Open = 0,
     Funded = 1,
+    Settled = 2,
 }
 
 /// Funding invoice for secondary market position management (BytesN<32> invoices).
