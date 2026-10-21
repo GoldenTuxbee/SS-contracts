@@ -1,0 +1,15 @@
+[package]
+name = "investor-portfolio-health"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Investor portfolio health score for concentration, maturity, diversification and default risk"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
