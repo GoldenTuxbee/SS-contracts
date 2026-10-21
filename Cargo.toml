@@ -39,6 +39,10 @@ members = [
     "contracts/secondary-market",
     "contracts/staking-rewards",
     "contracts/twap-oracle",
+    "contracts/price-stabilisation",
+    "contracts/accreditation-renewal",
+    "contracts/portfolio-nav-snapshot",
+    "contracts/invoice-tranche",
 ]
 
 [workspace.dependencies]
