@@ -3,7 +3,7 @@ name = "secondary-market"
 version = "0.1.0"
 edition = "2021"
 publish = false
-description = "StellarSettle secondary market listings with expiry enforcement"
+description = "Secondary market contract: fraction holders list fractions for resale at a set price, buyers purchase atomically, with listing expiry enforcement"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

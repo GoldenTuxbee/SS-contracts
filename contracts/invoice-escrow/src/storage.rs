@@ -1,10 +1,10 @@
 //! Storage helpers: instance for config, persistent for escrow data, invoice records, and positions.
 
-use soroban_sdk::{Address, BytesN, Env, Symbol};
+use soroban_sdk::{Address, BytesN, Env, Symbol, Vec};
 
 use crate::types::{
     CategoryFeeSchedule, Config, DisputeData, EmergencyApprovals, EscrowData, InstallmentMilestone,
-    InvoiceCategory, InvoiceData, MultiSigConfig, SettlementProposal, StorageKey,
+    InvestmentRecord, InvoiceCategory, InvoiceData, MultiSigConfig, SettlementProposal, StorageKey,
 };
 
 /// Ledgers below which a persistent entry's TTL is extended (~7 days at 5s/ledger).
@@ -49,6 +49,7 @@ pub fn get_escrow(env: &Env, inv_id: Symbol) -> Option<EscrowData> {
 
 /// Save escrow data for an invoice to persistent storage, extending its TTL.
 pub fn set_escrow(env: &Env, inv_id: Symbol, data: &EscrowData) {
+    crate::collateral::sync_escrow(env, data).unwrap_or_else(|error| env.panic_with_error(error));
     let key = StorageKey::Escrow(inv_id.clone());
     env.storage().persistent().set(&key, data);
     bump_persistent(env, &key);
@@ -141,15 +142,18 @@ pub fn set_whitelisted(env: &Env, buyer: &Address, allowed: bool) {
 use crate::types::FundingInvoice;
 
 pub fn get_invoice(env: &soroban_sdk::Env, invoice_id: BytesN<32>) -> Option<FundingInvoice> {
-    env.storage()
-        .persistent()
-        .get(&StorageKey::Invoice(invoice_id))
+    let key = StorageKey::Invoice(invoice_id);
+    let invoice = env.storage().persistent().get(&key);
+    if invoice.is_some() {
+        bump_persistent(env, &key);
+    }
+    invoice
 }
 
 pub fn set_invoice(env: &soroban_sdk::Env, invoice_id: BytesN<32>, invoice: &FundingInvoice) {
-    env.storage()
-        .persistent()
-        .set(&StorageKey::Invoice(invoice_id), invoice);
+    let key = StorageKey::Invoice(invoice_id);
+    env.storage().persistent().set(&key, invoice);
+    bump_persistent(env, &key);
 }
 
 pub fn has_invoice(env: &soroban_sdk::Env, invoice_id: BytesN<32>) -> bool {
@@ -399,6 +403,64 @@ pub fn set_max_investors(env: &Env, count: u32) {
     env.storage()
         .instance()
         .set(&StorageKey::MaxInvestors, &count);
+}
+
+/// Get the configured FX oracle contract, if any.
+pub fn get_fx_oracle(env: &Env) -> Option<Address> {
+    env.storage().instance().get(&StorageKey::FxOracle)
+}
+
+/// Set the FX oracle contract.
+pub fn set_fx_oracle(env: &Env, oracle: &Address) {
+    env.storage().instance().set(&StorageKey::FxOracle, oracle);
+}
+
+/// Get the payment token configured for a supported investment currency.
+pub fn get_currency_token(env: &Env, currency: &Symbol) -> Option<Address> {
+    env.storage()
+        .instance()
+        .get(&StorageKey::Currency(currency.clone()))
+}
+
+/// Set (`Some`) or remove (`None`) the payment token for an investment currency.
+pub fn set_currency_token(env: &Env, currency: &Symbol, token: Option<&Address>) {
+    let key = StorageKey::Currency(currency.clone());
+    match token {
+        Some(token) => env.storage().instance().set(&key, token),
+        None => env.storage().instance().remove(&key),
+    }
+}
+
+/// Get the multi-currency investment records for (invoice_id, investor).
+pub fn get_investment_records(
+    env: &Env,
+    inv_id: &BytesN<32>,
+    investor: &Address,
+) -> Vec<InvestmentRecord> {
+    let key = StorageKey::InvestRecords(inv_id.clone(), investor.clone());
+    let records = env
+        .storage()
+        .persistent()
+        .get(&key)
+        .unwrap_or_else(|| Vec::new(env));
+    if env.storage().persistent().has(&key) {
+        bump_persistent(env, &key);
+    }
+    records
+}
+
+/// Append a multi-currency investment record for (invoice_id, investor).
+pub fn add_investment_record(
+    env: &Env,
+    inv_id: &BytesN<32>,
+    investor: &Address,
+    record: &InvestmentRecord,
+) {
+    let key = StorageKey::InvestRecords(inv_id.clone(), investor.clone());
+    let mut records = get_investment_records(env, inv_id, investor);
+    records.push_back(record.clone());
+    env.storage().persistent().set(&key, &records);
+    bump_persistent(env, &key);
 }
 
 // ── Issue #443: Pending param change storage ─────────────────────────────────

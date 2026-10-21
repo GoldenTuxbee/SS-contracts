@@ -8,6 +8,7 @@ const sources = {
   "invoice-escrow": "contracts/invoice-escrow/src/errors.rs",
   "invoice-token": "contracts/invoice-token/src/errors.rs",
   "payment-distributor": "contracts/payment-distributor/src/errors.rs",
+  "secondary-market": "contracts/secondary-market/src/errors.rs",
 };
 
 const definitions = {};

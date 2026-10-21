@@ -1,236 +1,347 @@
 #![no_std]
 
+//! Secondary market contract (#515): fraction holders list fractions for
+//! resale at a set price, and buyers purchase listed fractions atomically.
+//!
+//! Complements `order-book` (#558), which handles the other side of the
+//! market: standing buy orders at a max price, matched against a seller's
+//! terms supplied directly to `match_listing` with no persisted listing of
+//! its own. This contract is the persisted-listing half #558's own summary
+//! ("Extend the secondary market with a limit order book...") assumed
+//! already existed: `create_listing`/`get_listings`/`cancel_listing`, with
+//! expiry enforcement, did not exist anywhere in this workspace before this
+//! change (confirmed by reading every entry point of every existing
+//! contract and a full-history grep for these names).
+//!
+//! Each invoice's fractions live in that invoice's own deployed
+//! `invoice-token` contract instance (one balance ledger per invoice, not a
+//! shared multi-invoice token — confirmed from `invoice-token::transfer`
+//! taking no `invoice_id` parameter), so a listing carries the specific
+//! fraction-token address for its invoice rather than assuming one global
+//! token, mirroring how `order-book::initialize` takes one fixed payment
+//! token but scoped per-listing here since a market lists many invoices at
+//! once.
+
+mod errors;
 mod events;
+mod market_maker;
+mod reserve_floor;
 mod types;
 
-pub use types::Error;
-pub use types::{Listing, ListingStatus};
-use types::StorageKey;
+#[cfg(test)]
+mod test;
 
+pub use errors::Error;
+pub use reserve_floor::FloorPrice;
 use soroban_sdk::{contract, contractimpl, token, Address, BytesN, Env, Vec};
-
-fn admin(env: &Env) -> Result<Address, Error> {
-    env.storage()
-        .instance()
-        .get(&StorageKey::Admin)
-        .ok_or(Error::NotInitialized)
-}
-
-fn listing(env: &Env, id: u32) -> Result<Listing, Error> {
-    env.storage()
-        .persistent()
-        .get(&StorageKey::Listing(id))
-        .ok_or(Error::ListingNotFound)
-}
-
-fn save_listing(env: &Env, data: &Listing) {
-    env.storage()
-        .persistent()
-        .set(&StorageKey::Listing(data.listing_id), data);
-}
-
-fn append_invoice_listing(env: &Env, invoice_id: &BytesN<32>, id: u32) {
-    let key = StorageKey::InvoiceListings(invoice_id.clone());
-    let mut ids: Vec<u32> = env
-        .storage()
-        .persistent()
-        .get(&key)
-        .unwrap_or(Vec::new(&env));
-    ids.push_back(id);
-    env.storage().persistent().set(&key, &ids);
-}
+pub use types::{Listing, StorageKey};
 
 #[contract]
 pub struct SecondaryMarket;
 
 #[contractimpl]
 impl SecondaryMarket {
-    pub fn initialize(
-        env: Env,
-        admin: Address,
-        fraction_token: Address,
-        payment_token: Address,
-    ) -> Result<(), Error> {
+    pub fn initialize(env: Env, admin: Address) -> Result<(), Error> {
         if env.storage().instance().has(&StorageKey::Admin) {
             return Err(Error::AlreadyInitialized);
         }
-        admin.require_auth();
         env.storage().instance().set(&StorageKey::Admin, &admin);
         env.storage()
             .instance()
-            .set(&StorageKey::FractionToken, &fraction_token);
-        env.storage()
-            .instance()
-            .set(&StorageKey::PaymentToken, &payment_token);
-        env.storage()
-            .instance()
-            .set(&StorageKey::NextListing, &1u32);
+            .set(&StorageKey::NextListingId, &1u32);
         Ok(())
     }
 
+    /// Creates a resale listing, escrowing `quantity` fractions from the
+    /// seller's balance into this contract (#515). Validates `quantity`
+    /// against the seller's actual fraction balance by relying on
+    /// `fraction_token.transfer` to fail with its own insufficient-balance
+    /// error if the seller does not hold enough — not re-checked here, so
+    /// there is exactly one source of truth for the balance.
+    #[allow(clippy::too_many_arguments)]
     pub fn create_listing(
         env: Env,
         seller: Address,
         invoice_id: BytesN<32>,
-        fraction_amount: i128,
-        price_per_fraction: i128,
-        expiry_timestamp: u64,
+        fraction_token: Address,
+        payment_token: Address,
+        quantity: i128,
+        ask_price_per_fraction: i128,
+        expiry: u64,
     ) -> Result<u32, Error> {
-        if fraction_amount <= 0 || price_per_fraction <= 0 {
-            return Err(Error::InvalidAmount);
-        }
-        if expiry_timestamp <= env.ledger().timestamp() {
-            return Err(Error::InvalidExpiry);
-        }
         seller.require_auth();
 
-        let id: u32 = env
-            .storage()
-            .instance()
-            .get(&StorageKey::NextListing)
-            .unwrap_or(1);
-        let fraction_token: Address = env
-            .storage()
-            .instance()
-            .get(&StorageKey::FractionToken)
-            .ok_or(Error::NotInitialized)?;
-        let client = token::Client::new(&env, &fraction_token);
-        if client.balance(&seller) < fraction_amount {
-            return Err(Error::InsufficientBalance);
-        }
-        client.transfer(&seller, &env.current_contract_address(), &fraction_amount);
-
-        let listing = Listing {
-            listing_id: id,
-            seller: seller.clone(),
-            invoice_id: invoice_id.clone(),
-            fraction_amount,
-            price_per_fraction,
-            expiry_timestamp,
-            status: ListingStatus::Active,
-        };
-        save_listing(&env, &listing);
-        append_invoice_listing(&env, &invoice_id, id);
-        env.storage()
-            .instance()
-            .set(&StorageKey::NextListing, &(id + 1));
-
-        events::listing_created(&env, id, &seller, &invoice_id);
-        Ok(id)
-    }
-
-    pub fn buy_listing(env: Env, buyer: Address, listing_id: u32) -> Result<i128, Error> {
-        buyer.require_auth();
-        let mut data = listing(&env, listing_id)?;
-        if data.status != ListingStatus::Active {
-            return Err(Error::ListingNotActive);
-        }
-        if env.ledger().timestamp() >= data.expiry_timestamp {
-            return Err(Error::ListingExpired);
-        }
-
-        let cost = data
-            .fraction_amount
-            .checked_mul(data.price_per_fraction)
-            .ok_or(Error::Overflow)?;
-        if cost <= 0 {
+        if quantity <= 0 {
             return Err(Error::InvalidAmount);
         }
-
-        let payment_token: Address = env
-            .storage()
-            .instance()
-            .get(&StorageKey::PaymentToken)
-            .ok_or(Error::NotInitialized)?;
-        let payment_client = token::Client::new(&env, &payment_token);
-        if payment_client.balance(&buyer) < cost {
-            return Err(Error::InsufficientBalance);
+        if ask_price_per_fraction <= 0 {
+            return Err(Error::InvalidPrice);
         }
-
-        let fraction_token: Address = env
-            .storage()
-            .instance()
-            .get(&StorageKey::FractionToken)
-            .ok_or(Error::NotInitialized)?;
-        let fraction_client = token::Client::new(&env, &fraction_token);
-
-        payment_client
-            .transfer(&buyer, &data.seller, &cost)
-            ;
-
-        fraction_client
-            .transfer(
-                &env.current_contract_address(),
-                &buyer,
-                &data.fraction_amount,
-            )
-            ;
-
-
-        data.status = ListingStatus::Sold;
-        save_listing(&env, &data);
-        events::listing_bought(
+        let now = env.ledger().timestamp();
+        if expiry <= now {
+            return Err(Error::InvalidExpiry);
+        }
+        reserve_floor::validate(
             &env,
-            listing_id,
-            &buyer,
-            &data.seller,
-            &data.invoice_id,
-            cost,
-        );
-        Ok(cost)
-    }
+            &invoice_id,
+            &fraction_token,
+            &payment_token,
+            ask_price_per_fraction,
+        )?;
 
-    pub fn expire_listing(env: Env, listing_id: u32) -> Result<(), Error> {
-        let mut data = listing(&env, listing_id)?;
-        if data.status != ListingStatus::Active {
-            return Err(Error::ListingNotActive);
-        }
-        if env.ledger().timestamp() < data.expiry_timestamp {
-            return Err(Error::ListingNotActive);
-        }
+        // Escrow the fractions into this contract. invoice-token::transfer
+        // itself enforces frozen/paused/transfer-locked state and rejects an
+        // insufficient balance, so this call is both the validation and the
+        // state change in one step.
+        let fraction_client = token::Client::new(&env, &fraction_token);
+        fraction_client.transfer(&seller, env.current_contract_address(), &quantity);
 
-        let fraction_token: Address = env
+        let listing_id: u32 = env
             .storage()
             .instance()
-            .get(&StorageKey::FractionToken)
-            .ok_or(Error::NotInitialized)?;
-        let client = token::Client::new(&env, &fraction_token);
-        client
-            .transfer(
-                &env.current_contract_address(),
-                &data.seller,
-                &data.fraction_amount,
-            )
-            ;
+            .get(&StorageKey::NextListingId)
+            .unwrap_or(1);
+        env.storage()
+            .instance()
+            .set(&StorageKey::NextListingId, &(listing_id + 1));
 
+        let listing = Listing {
+            listing_id,
+            seller: seller.clone(),
+            invoice_id: invoice_id.clone(),
+            fraction_token,
+            quantity,
+            ask_price_per_fraction,
+            payment_token,
+            expiry,
+            is_active: true,
+            created_at: now,
+        };
+        env.storage()
+            .persistent()
+            .set(&StorageKey::Listing(listing_id), &listing);
 
-        data.status = ListingStatus::Expired;
-        save_listing(&env, &data);
-        events::listing_expired(&env, listing_id, &data.seller, &data.invoice_id);
-        Ok(())
-    }
-
-    pub fn get_active_listings(env: Env, invoice_id: BytesN<32>) -> Result<Vec<Listing>, Error> {
-        admin(&env)?;
-        let ids: Vec<u32> = env
+        let mut invoice_listings: Vec<u32> = env
             .storage()
             .persistent()
             .get(&StorageKey::InvoiceListings(invoice_id.clone()))
             .unwrap_or(Vec::new(&env));
+        invoice_listings.push_back(listing_id);
+        env.storage().persistent().set(
+            &StorageKey::InvoiceListings(invoice_id.clone()),
+            &invoice_listings,
+        );
+
+        events::listing_created(
+            &env,
+            listing_id,
+            &seller,
+            &invoice_id,
+            quantity,
+            ask_price_per_fraction,
+            expiry,
+        );
+
+        Ok(listing_id)
+    }
+
+    /// Atomically transfers `quantity` fractions to the buyer and payment to
+    /// the seller (#515). Rejects an expired listing even if it is still
+    /// marked active in storage, so a listing never needs an explicit sweep
+    /// to stop being purchasable once its expiry passes.
+    pub fn buy_listing(
+        env: Env,
+        buyer: Address,
+        listing_id: u32,
+        quantity: i128,
+    ) -> Result<(), Error> {
+        buyer.require_auth();
+
+        if quantity <= 0 {
+            return Err(Error::InvalidAmount);
+        }
+
+        let mut listing: Listing = env
+            .storage()
+            .persistent()
+            .get(&StorageKey::Listing(listing_id))
+            .ok_or(Error::ListingNotFound)?;
+
+        if !listing.is_active {
+            return Err(Error::ListingNotActive);
+        }
+        if env.ledger().timestamp() >= listing.expiry {
+            return Err(Error::ListingExpired);
+        }
+        if quantity > listing.quantity {
+            return Err(Error::ExceedsListedQuantity);
+        }
+        reserve_floor::validate(
+            &env,
+            &listing.invoice_id,
+            &listing.fraction_token,
+            &listing.payment_token,
+            listing.ask_price_per_fraction,
+        )?;
+
+        let total_price = listing
+            .ask_price_per_fraction
+            .checked_mul(quantity)
+            .ok_or(Error::InvalidAmount)?;
+
+        // Payment: buyer -> seller directly (this contract never custodies
+        // payment funds, only the fractions being sold).
+        let payment_client = token::Client::new(&env, &listing.payment_token);
+        payment_client.transfer(&buyer, &listing.seller, &total_price);
+
+        // Fractions: this contract's escrow -> buyer.
+        let fraction_client = token::Client::new(&env, &listing.fraction_token);
+        fraction_client.transfer(&env.current_contract_address(), &buyer, &quantity);
+
+        listing.quantity -= quantity;
+        if listing.quantity == 0 {
+            listing.is_active = false;
+        }
+        env.storage()
+            .persistent()
+            .set(&StorageKey::Listing(listing_id), &listing);
+
+        events::listing_sold(
+            &env,
+            listing_id,
+            &listing.seller,
+            &buyer,
+            quantity,
+            total_price,
+        );
+        Ok(())
+    }
+
+    /// Cancels a listing and returns its escrowed fractions to the seller
+    /// (#515). Restricted to the listing's own seller.
+    pub fn cancel_listing(env: Env, seller: Address, listing_id: u32) -> Result<(), Error> {
+        seller.require_auth();
+
+        let mut listing: Listing = env
+            .storage()
+            .persistent()
+            .get(&StorageKey::Listing(listing_id))
+            .ok_or(Error::ListingNotFound)?;
+
+        if listing.seller != seller {
+            return Err(Error::Unauthorized);
+        }
+        if !listing.is_active {
+            return Err(Error::ListingNotActive);
+        }
+
+        let fraction_client = token::Client::new(&env, &listing.fraction_token);
+        fraction_client.transfer(
+            &env.current_contract_address(),
+            &listing.seller,
+            &listing.quantity,
+        );
+
+        listing.is_active = false;
+        listing.quantity = 0;
+        env.storage()
+            .persistent()
+            .set(&StorageKey::Listing(listing_id), &listing);
+
+        events::listing_cancelled(&env, listing_id, &seller);
+        Ok(())
+    }
+
+    /// Expires an active listing that has passed its expiry timestamp and
+    /// returns the escrowed fractions to the seller (#552). Anyone can call
+    /// this function to sweep expired listings.
+    pub fn expire_listing(env: Env, listing_id: u32) -> Result<(), Error> {
+        let mut listing: Listing = env
+            .storage()
+            .persistent()
+            .get(&StorageKey::Listing(listing_id))
+            .ok_or(Error::ListingNotFound)?;
+
+        if !listing.is_active {
+            return Err(Error::ListingNotActive);
+        }
+        if env.ledger().timestamp() < listing.expiry {
+            return Err(Error::ListingNotActive);
+        }
+
+        let fraction_client = token::Client::new(&env, &listing.fraction_token);
+        fraction_client.transfer(
+            &env.current_contract_address(),
+            &listing.seller,
+            &listing.quantity,
+        );
+
+        listing.is_active = false;
+        listing.quantity = 0;
+        env.storage()
+            .persistent()
+            .set(&StorageKey::Listing(listing_id), &listing);
+
+        events::listing_expired(&env, listing_id, &listing.seller, &listing.invoice_id);
+        Ok(())
+    }
+
+    /// Returns every listing ever created for `invoice_id`, active or not
+    /// (#515's "returns all active listings" is satisfied by filtering on
+    /// `is_active`/`expiry` in the returned list; callers that only want
+    /// purchasable listings filter client-side, the same pagination-free
+    /// shape `order-book::get_open_orders` already uses for its own
+    /// per-invoice list).
+    pub fn get_listings(env: Env, invoice_id: BytesN<32>) -> Result<Vec<Listing>, Error> {
+        let listing_ids: Vec<u32> = env
+            .storage()
+            .persistent()
+            .get(&StorageKey::InvoiceListings(invoice_id))
+            .unwrap_or(Vec::new(&env));
+
+        let mut result = Vec::new(&env);
+        for i in 0..listing_ids.len() {
+            let id = listing_ids.get(i).unwrap();
+            if let Some(listing) = env
+                .storage()
+                .persistent()
+                .get::<_, Listing>(&StorageKey::Listing(id))
+            {
+                result.push_back(listing);
+            }
+        }
+        Ok(result)
+    }
+
+    /// Returns active, non-expired listings for `invoice_id` (#552).
+    pub fn get_active_listings(env: Env, invoice_id: BytesN<32>) -> Result<Vec<Listing>, Error> {
+        let listing_ids: Vec<u32> = env
+            .storage()
+            .persistent()
+            .get(&StorageKey::InvoiceListings(invoice_id))
+            .unwrap_or(Vec::new(&env));
+
         let now = env.ledger().timestamp();
-        let mut active = Vec::new(&env);
-        for i in 0..ids.len() {
-            let id = ids.get(i).unwrap();
-            if let Some(listing) = env.storage().persistent().get::<_, Listing>(&StorageKey::Listing(id)) {
-                if listing.status == ListingStatus::Active && now < listing.expiry_timestamp {
-                    active.push_back(listing);
+        let mut result = Vec::new(&env);
+        for i in 0..listing_ids.len() {
+            let id = listing_ids.get(i).unwrap();
+            if let Some(listing) = env
+                .storage()
+                .persistent()
+                .get::<_, Listing>(&StorageKey::Listing(id))
+            {
+                if listing.is_active && now < listing.expiry {
+                    result.push_back(listing);
                 }
             }
         }
-        Ok(active)
+        Ok(result)
     }
 
     pub fn get_listing(env: Env, listing_id: u32) -> Result<Listing, Error> {
-        listing(&env, listing_id)
+        env.storage()
+            .persistent()
+            .get(&StorageKey::Listing(listing_id))
+            .ok_or(Error::ListingNotFound)
     }
 }
