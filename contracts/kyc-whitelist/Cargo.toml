@@ -1,0 +1,15 @@
+[package]
+name = "kyc-whitelist"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "KYC whitelist contract gating investor access, queried by the invoice escrow's accreditation callback"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }

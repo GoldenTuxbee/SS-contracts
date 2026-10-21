@@ -1,0 +1,15 @@
+[package]
+name = "secondary-market"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Secondary market contract: fraction holders list fractions for resale at a set price, buyers purchase atomically"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }

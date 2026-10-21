@@ -49,6 +49,41 @@ pub enum StorageKey {
     BuyLimit(soroban_sdk::BytesN<32>),
     /// Persistent: a wallet's current buy-limit window by (invoice_id, wallet).
     BuyWindow(soroban_sdk::BytesN<32>, soroban_sdk::Address),
+    /// Instance: FX oracle contract used to normalise foreign-currency investments.
+    FxOracle,
+    /// Instance: payment token for a supported investment currency.
+    Currency(soroban_sdk::Symbol),
+    /// Persistent: multi-currency investment records by (invoice_id, investor).
+    InvestRecords(soroban_sdk::BytesN<32>, soroban_sdk::Address),
+    InvoiceCap(soroban_sdk::BytesN<32>),
+    Investors(soroban_sdk::BytesN<32>),
+    InvestmentStarted(soroban_sdk::BytesN<32>),
+    Custody(soroban_sdk::BytesN<32>, soroban_sdk::Address),
+    Repayment(soroban_sdk::BytesN<32>),
+    Collateral(soroban_sdk::Address),
+    Outstanding(soroban_sdk::BytesN<32>),
+    EscrowOutstanding(soroban_sdk::Symbol),
+    CollateralReserve(soroban_sdk::Address),
+    RepaymentReserve(soroban_sdk::Address),
+}
+
+/// One multi-currency investment, normalised to the base currency at the FX
+/// oracle rate in effect when it was made.
+#[contracttype]
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct InvestmentRecord {
+    /// Currency the investor paid in (e.g. USDC, EURC, NGNC).
+    pub currency: soroban_sdk::Symbol,
+    /// Amount paid, in the investment currency.
+    pub amount: i128,
+    /// Oracle rate applied (base units per currency unit, scaled by `decimals`).
+    pub rate: i128,
+    /// Decimal precision of `rate`.
+    pub decimals: u32,
+    /// Amount credited to the investor position, in base currency.
+    pub base_amount: i128,
+    /// Ledger timestamp of the investment.
+    pub timestamp: u64,
 }
 
 /// Registered invoice metadata and funding parameters stored in persistent storage.
@@ -252,6 +287,7 @@ pub struct SettlementProposal {
 pub enum InvoiceStatus {
     Open = 0,
     Funded = 1,
+    Settled = 2,
 }
 
 /// Funding invoice for secondary market position management (BytesN<32> invoices).
