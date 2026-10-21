@@ -2,7 +2,7 @@
 
 use super::*;
 use soroban_sdk::{
-    testutils::{Address as _, Ledger as _},
+    testutils::{Address as _, Events as _, Ledger as _},
     token::StellarAssetClient,
     Address, BytesN, Env,
 };
@@ -376,3 +376,152 @@ fn test_events_emitted_with_correct_data() {
         1
     ); // ListingCancelled
 }
+
+#[test]
+fn test_expire_listing_returns_fractions_to_seller_and_emits_event() {
+    let (env, client, admin) = setup();
+    let seller = Address::generate(&env);
+    let (fraction_token, fraction_mint) = setup_token(&env, &admin);
+    let (payment_token, _payment_mint) = setup_token(&env, &admin);
+
+    fraction_mint.mint(&seller, &20);
+
+    let invoice_id = BytesN::from_array(&env, &[1u8; 32]);
+    let expiry = env.ledger().timestamp() + 50;
+    let listing_id = client.create_listing(
+        &seller,
+        &invoice_id,
+        &fraction_token,
+        &payment_token,
+        &20,
+        &50,
+        &expiry,
+    );
+
+    let fraction_client = soroban_sdk::token::Client::new(&env, &fraction_token);
+    assert_eq!(fraction_client.balance(&seller), 0);
+    assert_eq!(fraction_client.balance(&client.address), 20);
+
+    // Fast-forward past expiry
+    env.ledger().with_mut(|li| li.timestamp = expiry + 1);
+
+    // Anyone can call expire_listing
+    client.expire_listing(&listing_id);
+
+    // Emitted ListingExpired event
+    assert_eq!(
+        env.events()
+            .all()
+            .filter_by_contract(&client.address)
+            .events()
+            .len(),
+        1
+    ); // ListingExpired
+
+    // Fractions returned to seller
+    assert_eq!(fraction_client.balance(&seller), 20);
+    assert_eq!(fraction_client.balance(&client.address), 0);
+
+    // Listing is no longer active
+    let listing = client.get_listing(&listing_id);
+    assert!(!listing.is_active);
+    assert_eq!(listing.quantity, 0);
+}
+
+#[test]
+fn test_expire_listing_rejects_unexpired_or_inactive_listing() {
+    let (env, client, admin) = setup();
+    let seller = Address::generate(&env);
+    let (fraction_token, fraction_mint) = setup_token(&env, &admin);
+    let (payment_token, _payment_mint) = setup_token(&env, &admin);
+
+    fraction_mint.mint(&seller, &20);
+
+    let invoice_id = BytesN::from_array(&env, &[1u8; 32]);
+    let expiry = env.ledger().timestamp() + 50;
+    let listing_id = client.create_listing(
+        &seller,
+        &invoice_id,
+        &fraction_token,
+        &payment_token,
+        &20,
+        &50,
+        &expiry,
+    );
+
+    // Cannot expire before expiry timestamp
+    assert_eq!(
+        client.try_expire_listing(&listing_id),
+        Err(Ok(Error::ListingNotActive))
+    );
+
+    // Cancel listing
+    client.cancel_listing(&seller, &listing_id);
+
+    // Cannot expire already inactive listing
+    env.ledger().with_mut(|li| li.timestamp = expiry + 1);
+    assert_eq!(
+        client.try_expire_listing(&listing_id),
+        Err(Ok(Error::ListingNotActive))
+    );
+}
+
+#[test]
+fn test_get_active_listings_excludes_expired_and_inactive_listings() {
+    let (env, client, admin) = setup();
+    let seller = Address::generate(&env);
+    let (fraction_token, fraction_mint) = setup_token(&env, &admin);
+    let (payment_token, _payment_mint) = setup_token(&env, &admin);
+
+    fraction_mint.mint(&seller, &100);
+
+    let invoice_id = BytesN::from_array(&env, &[1u8; 32]);
+
+    // Listing 1: expires far in the future
+    let id1 = client.create_listing(
+        &seller,
+        &invoice_id,
+        &fraction_token,
+        &payment_token,
+        &10,
+        &50,
+        &FAR_FUTURE,
+    );
+
+    // Listing 2: expires soon
+    let expiry2 = env.ledger().timestamp() + 100;
+    let _id2 = client.create_listing(
+        &seller,
+        &invoice_id,
+        &fraction_token,
+        &payment_token,
+        &20,
+        &50,
+        &expiry2,
+    );
+
+    // Listing 3: cancelled
+    let id3 = client.create_listing(
+        &seller,
+        &invoice_id,
+        &fraction_token,
+        &payment_token,
+        &30,
+        &50,
+        &FAR_FUTURE,
+    );
+    client.cancel_listing(&seller, &id3);
+
+    // Both active initially (id1, id2)
+    let active_before = client.get_active_listings(&invoice_id);
+    assert_eq!(active_before.len(), 2);
+
+    // Advance past expiry of listing 2
+    env.ledger().with_mut(|li| li.timestamp = expiry2 + 10);
+
+    // Now get_active_listings excludes listing 2 because it's expired
+    let active_after = client.get_active_listings(&invoice_id);
+    assert_eq!(active_after.len(), 1);
+    assert_eq!(active_after.get(0).unwrap().listing_id, id1);
+}
+

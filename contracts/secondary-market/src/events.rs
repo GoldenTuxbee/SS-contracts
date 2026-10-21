@@ -41,3 +41,11 @@ pub fn listing_cancelled(env: &Env, listing_id: u32, seller: &Address) {
     let topics = (Symbol::new(env, "ListingCancelled"), listing_id);
     env.events().publish(topics, seller.clone());
 }
+
+pub fn listing_expired(env: &Env, listing_id: u32, seller: &Address, invoice_id: &BytesN<32>) {
+    let topics = (Symbol::new(env, "ListingExpired"), listing_id);
+    env.events().publish(
+        topics,
+        (seller.clone(), invoice_id.clone(), env.ledger().timestamp()),
+    );
+}

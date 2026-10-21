@@ -475,6 +475,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "collateral"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 27.0.6",
+]
+
+[[package]]
 name = "const-oid"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -793,6 +800,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "dividend-reinvestment"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 27.0.6",
+]
+
+[[package]]
 name = "document-cid-registry"
 version = "0.1.0"
 dependencies = [
@@ -825,6 +839,13 @@ name = "dyn-clone"
 version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d0881ea181b1df73ff77ffaaf9c7544ecc11e82fba9b5f27b262a3c73a332555"
+
+[[package]]
+name = "early-repayment"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 27.0.6",
+]
 
 [[package]]
 name = "ecdsa"
@@ -1277,6 +1298,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "invoice-amendment"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 27.0.6",
+]
+
+[[package]]
 name = "invoice-co-investment"
 version = "0.1.0"
 dependencies = [
@@ -1294,6 +1322,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "invoice-maturity"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 27.0.6",
+]
+
+[[package]]
 name = "invoice-metadata-registry"
 version = "0.1.0"
 dependencies = [
@@ -1302,6 +1337,27 @@ dependencies = [
 
 [[package]]
 name = "invoice-pool"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 27.0.6",
+]
+
+[[package]]
+name = "invoice-refund"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 27.0.6",
+]
+
+[[package]]
+name = "invoice-settlement"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 27.0.6",
+]
+
+[[package]]
+name = "invoice-snapshot"
 version = "0.1.0"
 dependencies = [
  "soroban-sdk 27.0.6",
@@ -1486,6 +1542,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1fa76a2c86f704bdb222d66965fb3d63269ce38518b83cb0575fca855ebb6316"
 dependencies = [
  "adler2",
+]
+
+[[package]]
+name = "multisig-admin"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 27.0.6",
 ]
 
 [[package]]
@@ -1922,13 +1985,6 @@ dependencies = [
 
 [[package]]
 name = "secondary-market"
-version = "0.1.0"
-dependencies = [
- "soroban-sdk 27.0.6",
-]
-
-[[package]]
-name = "secondary-market-oracle"
 version = "0.1.0"
 dependencies = [
  "soroban-sdk 27.0.6",
@@ -2475,6 +2531,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 
 [[package]]
+name = "staking-rewards"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 27.0.6",
+]
+
+[[package]]
 name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2701,7 +2764,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "transfer-restriction"
+name = "twap-oracle"
 version = "0.1.0"
 dependencies = [
  "soroban-sdk 27.0.6",

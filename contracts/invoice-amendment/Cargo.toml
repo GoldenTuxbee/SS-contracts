@@ -1,0 +1,15 @@
+[package]
+name = "invoice-amendment"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "StellarSettle invoice amendment contract with time-lock"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }
