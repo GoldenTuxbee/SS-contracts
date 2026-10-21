@@ -27,10 +27,14 @@ members = [
     "contracts/order-book",
     "contracts/partial-settlement",
     "contracts/payment-distributor",
-    "contracts/fee-treasury",
-    "contracts/secondary-market",
-    "contracts/secondary-market-oracle",
-    "contracts/transfer-restriction",
+    "contracts/invoice-refund",
+    "contracts/invoice-maturity",
+    "contracts/invoice-snapshot",
+    "contracts/multisig-admin",
+    "contracts/twap-oracle",
+    "contracts/early-repayment",
+    "contracts/staking-rewards",
+    "contracts/dividend-reinvestment",
 ]
 
 [workspace.dependencies]
