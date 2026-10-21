@@ -43,6 +43,7 @@ members = [
     "contracts/accreditation-renewal",
     "contracts/portfolio-nav-snapshot",
     "contracts/invoice-tranche",
+    "contracts/invoice-performance-alert",
 ]
 
 [workspace.dependencies]
