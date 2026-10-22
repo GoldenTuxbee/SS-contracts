@@ -45,6 +45,7 @@ members = [
     "contracts/invoice-tranche",
     "contracts/invoice-performance-alert",
     "contracts/investor-portfolio-health",
+    "contracts/invoice-co-investment-pool",
 ]
 
 [workspace.dependencies]
