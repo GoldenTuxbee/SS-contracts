@@ -7,26 +7,35 @@ members = [
     "contracts/batch-settlement",
     "contracts/bulk-listing",
     "contracts/categorisation-registry",
+    "contracts/collateral",
+    "contracts/dividend-reinvestment",
     "contracts/document-cid-registry",
+    "contracts/early-repayment",
     "contracts/fee-discount",
     "contracts/grace-interest",
     "contracts/interest-rate-oracle",
     "contracts/investment-limit",
     "contracts/investor-notifications",
     "contracts/investor-scoring",
+    "contracts/invoice-amendment",
     "contracts/invoice-co-investment",
     "contracts/invoice-escrow",
+    "contracts/invoice-issuer-verification",
+    "contracts/invoice-maturity",
     "contracts/invoice-metadata-registry",
     "contracts/invoice-pool",
+    "contracts/invoice-refund",
+    "contracts/invoice-settlement",
+    "contracts/invoice-snapshot",
     "contracts/invoice-token",
     "contracts/kyc-whitelist",
     "contracts/loyalty-tier",
+    "contracts/multisig-admin",
     "contracts/nonce-registry",
     "contracts/onboarding-bonus",
     "contracts/order-book",
     "contracts/partial-settlement",
     "contracts/payment-distributor",
-    "contracts/fee-treasury",
     "contracts/secondary-market",
     "contracts/secondary-market-oracle",
     "contracts/transfer-restriction",
@@ -34,6 +43,18 @@ members = [
     "contracts/secondary-cooldown",
     "contracts/overcollateral-reward",
     "contracts/credit-scoring",
+    "contracts/secondary-trade-history",
+    "contracts/staking-rewards",
+    "contracts/treasury-management",
+    "contracts/twap-oracle",
+    "contracts/price-stabilisation",
+    "contracts/accreditation-renewal",
+    "contracts/portfolio-nav-snapshot",
+    "contracts/invoice-tranche",
+    "contracts/invoice-performance-alert",
+    "contracts/investor-portfolio-health",
+    "contracts/invoice-co-investment-pool",
+    "contracts/invoice-hardship-extension",
 ]
 
 [workspace.dependencies]
@@ -43,6 +64,8 @@ proptest = "1"
 
 [profile.release]
 opt-level = "z"
+strip = "symbols"
+overflow-checks = true
 lto = true
 codegen-units = 1
 panic = "abort"

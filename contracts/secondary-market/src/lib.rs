@@ -25,12 +25,14 @@
 mod errors;
 mod events;
 mod market_maker;
+mod reserve_floor;
 mod types;
 
 #[cfg(test)]
 mod test;
 
 pub use errors::Error;
+pub use reserve_floor::FloorPrice;
 use soroban_sdk::{contract, contractimpl, token, Address, BytesN, Env, Vec};
 pub use types::{Listing, StorageKey};
 
@@ -79,6 +81,13 @@ impl SecondaryMarket {
         if expiry <= now {
             return Err(Error::InvalidExpiry);
         }
+        reserve_floor::validate(
+            &env,
+            &invoice_id,
+            &fraction_token,
+            &payment_token,
+            ask_price_per_fraction,
+        )?;
 
         // Escrow the fractions into this contract. invoice-token::transfer
         // itself enforces frozen/paused/transfer-locked state and rejects an
@@ -167,6 +176,13 @@ impl SecondaryMarket {
         if quantity > listing.quantity {
             return Err(Error::ExceedsListedQuantity);
         }
+        reserve_floor::validate(
+            &env,
+            &listing.invoice_id,
+            &listing.fraction_token,
+            &listing.payment_token,
+            listing.ask_price_per_fraction,
+        )?;
 
         let total_price = listing
             .ask_price_per_fraction
@@ -236,6 +252,40 @@ impl SecondaryMarket {
         Ok(())
     }
 
+    /// Expires an active listing that has passed its expiry timestamp and
+    /// returns the escrowed fractions to the seller (#552). Anyone can call
+    /// this function to sweep expired listings.
+    pub fn expire_listing(env: Env, listing_id: u32) -> Result<(), Error> {
+        let mut listing: Listing = env
+            .storage()
+            .persistent()
+            .get(&StorageKey::Listing(listing_id))
+            .ok_or(Error::ListingNotFound)?;
+
+        if !listing.is_active {
+            return Err(Error::ListingNotActive);
+        }
+        if env.ledger().timestamp() < listing.expiry {
+            return Err(Error::ListingNotActive);
+        }
+
+        let fraction_client = token::Client::new(&env, &listing.fraction_token);
+        fraction_client.transfer(
+            &env.current_contract_address(),
+            &listing.seller,
+            &listing.quantity,
+        );
+
+        listing.is_active = false;
+        listing.quantity = 0;
+        env.storage()
+            .persistent()
+            .set(&StorageKey::Listing(listing_id), &listing);
+
+        events::listing_expired(&env, listing_id, &listing.seller, &listing.invoice_id);
+        Ok(())
+    }
+
     /// Returns every listing ever created for `invoice_id`, active or not
     /// (#515's "returns all active listings" is satisfied by filtering on
     /// `is_active`/`expiry` in the returned list; callers that only want
@@ -258,6 +308,31 @@ impl SecondaryMarket {
                 .get::<_, Listing>(&StorageKey::Listing(id))
             {
                 result.push_back(listing);
+            }
+        }
+        Ok(result)
+    }
+
+    /// Returns active, non-expired listings for `invoice_id` (#552).
+    pub fn get_active_listings(env: Env, invoice_id: BytesN<32>) -> Result<Vec<Listing>, Error> {
+        let listing_ids: Vec<u32> = env
+            .storage()
+            .persistent()
+            .get(&StorageKey::InvoiceListings(invoice_id))
+            .unwrap_or(Vec::new(&env));
+
+        let now = env.ledger().timestamp();
+        let mut result = Vec::new(&env);
+        for i in 0..listing_ids.len() {
+            let id = listing_ids.get(i).unwrap();
+            if let Some(listing) = env
+                .storage()
+                .persistent()
+                .get::<_, Listing>(&StorageKey::Listing(id))
+            {
+                if listing.is_active && now < listing.expiry {
+                    result.push_back(listing);
+                }
             }
         }
         Ok(result)

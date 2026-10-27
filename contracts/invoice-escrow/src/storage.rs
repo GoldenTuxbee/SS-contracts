@@ -49,6 +49,7 @@ pub fn get_escrow(env: &Env, inv_id: Symbol) -> Option<EscrowData> {
 
 /// Save escrow data for an invoice to persistent storage, extending its TTL.
 pub fn set_escrow(env: &Env, inv_id: Symbol, data: &EscrowData) {
+    crate::collateral::sync_escrow(env, data).unwrap_or_else(|error| env.panic_with_error(error));
     let key = StorageKey::Escrow(inv_id.clone());
     env.storage().persistent().set(&key, data);
     bump_persistent(env, &key);
@@ -141,15 +142,18 @@ pub fn set_whitelisted(env: &Env, buyer: &Address, allowed: bool) {
 use crate::types::FundingInvoice;
 
 pub fn get_invoice(env: &soroban_sdk::Env, invoice_id: BytesN<32>) -> Option<FundingInvoice> {
-    env.storage()
-        .persistent()
-        .get(&StorageKey::Invoice(invoice_id))
+    let key = StorageKey::Invoice(invoice_id);
+    let invoice = env.storage().persistent().get(&key);
+    if invoice.is_some() {
+        bump_persistent(env, &key);
+    }
+    invoice
 }
 
 pub fn set_invoice(env: &soroban_sdk::Env, invoice_id: BytesN<32>, invoice: &FundingInvoice) {
-    env.storage()
-        .persistent()
-        .set(&StorageKey::Invoice(invoice_id), invoice);
+    let key = StorageKey::Invoice(invoice_id);
+    env.storage().persistent().set(&key, invoice);
+    bump_persistent(env, &key);
 }
 
 pub fn has_invoice(env: &soroban_sdk::Env, invoice_id: BytesN<32>) -> bool {

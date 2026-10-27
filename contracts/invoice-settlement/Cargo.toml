@@ -1,0 +1,15 @@
+[package]
+name = "invoice-settlement"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "StellarSettle invoice repayment settlement and pro-rata payout contract"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }

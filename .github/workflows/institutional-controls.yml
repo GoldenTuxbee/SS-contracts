@@ -1,0 +1,39 @@
+name: Institutional Invoice Controls
+
+on:
+  pull_request:
+    branches: [dev]
+  push:
+    branches: [dev]
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+      - uses: Swatinem/rust-cache@v2
+      - name: Test token-backed controls and existing refund properties
+        run: cargo test --locked -p invoice-escrow --test institutional_controls --test fuzz_refund
+      - name: Test secondary market and reserve floors
+        run: cargo test --locked -p secondary-market
+      - name: Install the validated Stellar build tool
+        run: cargo install stellar-cli --locked --version 26.0.0
+      - name: Build deployment artifacts and validate their size and interfaces
+        run: bash scripts/build-institutional.sh
+      - name: Exercise compiled release WASM with default resource limits
+        env:
+          SS_CONTRACT_WASM_DIR: ${{ github.workspace }}/target/institutional
+        run: |
+          cargo test --locked -p invoice-escrow --test institutional_controls
+          cargo test --locked -p secondary-market --test reserve_floor
+      - uses: actions/upload-artifact@v4
+        with:
+          name: institutional-contracts
+          path: target/institutional/*.wasm
+          if-no-files-found: error

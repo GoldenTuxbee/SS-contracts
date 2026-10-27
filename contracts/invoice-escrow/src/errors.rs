@@ -146,4 +146,24 @@ pub enum Error {
     StalePrice = 66,
     /// No FX oracle contract has been configured.
     FxOracleNotSet = 67,
+    /// Per-invoice investor cap reached; get_investor_count reports current/max.
+    InvestorCapReached = 68,
+    /// Custody already registered for the destination custodian and invoice.
+    CustodyExists = 69,
+    /// No beneficial ownership record exists for this position.
+    CustodyNotFound = 70,
+    /// Operation would dispose of a beneficial owner's reserved position.
+    PositionInCustody = 71,
+    /// Issuer must restore its collateral ratio before creating invoices.
+    CollateralTopUpRequired = 72,
+    /// Collateral account has not been configured for this issuer.
+    CollateralNotConfigured = 73,
+    /// Issuer's collateral already meets the required ratio.
+    CollateralRatioHealthy = 74,
+    /// Invalid collateral threshold or mismatched collateral/payment token.
+    InvalidCollateralConfig = 75,
+    /// Payout would consume collateral reserved for issuer obligations.
+    CollateralReserved = 76,
+    /// Payout would consume repayment deposits reserved for another invoice.
+    RepaymentReserved = 77,
 }
