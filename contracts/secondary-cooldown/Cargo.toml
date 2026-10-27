@@ -1,0 +1,15 @@
+[package]
+name = "secondary-cooldown"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Per-wallet cooldown between secondary market purchases on the same invoice"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }

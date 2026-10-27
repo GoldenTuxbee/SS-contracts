@@ -1,0 +1,15 @@
+[package]
+name = "overcollateral-reward"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Grants fee discounts to issuers that maintain over-collateralisation for 30+ days"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }

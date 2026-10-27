@@ -1,0 +1,15 @@
+[package]
+name = "invoice-milestone"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Staged disbursement contract releasing invoice proceeds in milestone-gated tranches"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+soroban-sdk = { workspace = true }
+
+[dev-dependencies]
+soroban-sdk = { workspace = true, features = ["testutils"] }

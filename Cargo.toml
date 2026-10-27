@@ -9,7 +9,6 @@ members = [
     "contracts/categorisation-registry",
     "contracts/document-cid-registry",
     "contracts/fee-discount",
-    "contracts/fee-treasury",
     "contracts/grace-interest",
     "contracts/interest-rate-oracle",
     "contracts/investment-limit",
@@ -31,6 +30,10 @@ members = [
     "contracts/secondary-market",
     "contracts/secondary-market-oracle",
     "contracts/transfer-restriction",
+    "contracts/invoice-milestone",
+    "contracts/secondary-cooldown",
+    "contracts/overcollateral-reward",
+    "contracts/credit-scoring",
 ]
 
 [workspace.dependencies]
